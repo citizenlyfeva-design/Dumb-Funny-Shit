@@ -13,10 +13,7 @@ type Video = {
   likes_count: number;
   comments_count: number;
   created_at: string;
-  profiles?: {
-    username: string | null;
-    avatar_url: string | null;
-  } | null;
+  profiles?: any;
 };
 
 function VideoCard({
