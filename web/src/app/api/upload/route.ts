@@ -8,14 +8,13 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
-    const caption = (formData.get("caption") as string) || "";
-    const userId = (formData.get("userId") as string) || null;
+    const caption = (formData.get("caption") as string) || "Dumb funny shit";
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    // 1. Create video object in Bunny Stream
+    // 1. Create video in Bunny
     const createRes = await fetch(
       `https://video.bunnycdn.com/library/${LIBRARY_ID}/videos`,
       {
@@ -26,7 +25,7 @@ export async function POST(req: NextRequest) {
           Accept: "application/json",
         },
         body: JSON.stringify({
-          title: caption || file.name || "Dumb funny shit",
+          title: caption.slice(0, 100) || "Dumb funny shit",
         }),
       }
     );
@@ -43,9 +42,9 @@ export async function POST(req: NextRequest) {
     const bunnyData = await createRes.json();
     const videoId = bunnyData.guid as string;
 
-    // 2. Upload the actual file to Bunny
+    // 2. Upload the file
     const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer as ArrayBuffer);
+    const buffer = Buffer.from(arrayBuffer);
 
     const uploadRes = await fetch(
       `https://video.bunnycdn.com/library/${LIBRARY_ID}/videos/${videoId}`,
@@ -68,14 +67,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 3. Save metadata to Supabase
+    // 3. Save to Supabase
     const supabase = createServiceClient();
     const { data, error } = await supabase
       .from("videos")
       .insert({
         bunny_video_id: videoId,
         caption: caption || null,
-        user_id: userId || null,
+        user_id: null,
       })
       .select()
       .single();
