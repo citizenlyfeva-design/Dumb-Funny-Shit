@@ -68,8 +68,7 @@ function VideoCard({
   const playbackUrl = getPlaybackUrl(video.bunny_video_id);
 
   return (
-    <div className="relative h-[100dvh] w-full snap-start flex items-center justify-center bg-black">
-      <video
+    <div className="relative h-[100dvh] w-full snap-start flex items-center justify-center bg-<video
   ref={videoRef}
   src={playbackUrl}
   className="absolute inset-0 h-full w-full object-cover"
@@ -80,7 +79,7 @@ function VideoCard({
   preload="auto"
   poster={getThumbnailUrl(video.bunny_video_id)}
   controls={false}
-/>
+/> 
 
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none" />
 
