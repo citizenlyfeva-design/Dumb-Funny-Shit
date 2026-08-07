@@ -158,7 +158,7 @@ export default function HomePage() {
           caption,
           likes_count,
           comments_count,
-          created_at,
+          created_at
         `
         )
         .order("created_at", { ascending: false })
