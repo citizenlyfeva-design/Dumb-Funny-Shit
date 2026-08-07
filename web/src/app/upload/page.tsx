@@ -12,39 +12,45 @@ export default function UploadPage() {
   const [progress, setProgress] = useState("");
   const [error, setError] = useState("");
 
-  const handleUpload = async () => {
-    if (!file) return;
-    setUploading(true);
-    setError("");
-    setProgress("Uploading...");
+const handleUpload = async () => {
+  if (!file) return;
+  setUploading(true);
+  setError("");
+  setProgress("Uploading...");
 
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("caption", caption || "Dumb funny shit");
+
+    const res = await fetch("/api/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    const text = await res.text();
+    let data: any = {};
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("caption", caption);
-
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Upload failed");
-      }
-
-      setProgress("Done! Processing on Bunny...");
-      setTimeout(() => {
-        router.push("/");
-      }, 1500);
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Upload failed");
-      setUploading(false);
-      setProgress("");
+      data = JSON.parse(text);
+    } catch {
+      throw new Error(text || "Upload failed – server returned invalid response");
     }
-  };
+
+    if (!res.ok) {
+      throw new Error(data.error || "Upload failed");
+    }
+
+    setProgress("Done! Processing on Bunny...");
+    setTimeout(() => {
+      router.push("/");
+    }, 1500);
+  } catch (err: any) {
+    console.error(err);
+    setError(err.message || "Upload failed");
+    setUploading(false);
+    setProgress("");
+  }
+};
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
