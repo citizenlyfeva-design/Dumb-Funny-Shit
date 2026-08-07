@@ -23,20 +23,8 @@ function VideoCard({
   video: Video;
   isActive: boolean;
 }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(video.likes_count || 0);
-
-  useEffect(() => {
-    if (videoRef.current) {
-      if (isActive) {
-        videoRef.current.play().catch(() => {});
-      } else {
-        videoRef.current.pause();
-        videoRef.current.currentTime = 0;
-      }
-    }
-  }, [isActive]);
 
   const toggleLike = async () => {
     const newLiked = !liked;
@@ -65,21 +53,14 @@ function VideoCard({
     }
   };
 
-  const playbackUrl = getPlaybackUrl(video.bunny_video_id);
-
   return (
-    <div className="relative h-[100dvh] w-full snap-start flex items-center justify-center bg-<video
-  ref={videoRef}
-  src={playbackUrl}
-  className="absolute inset-0 h-full w-full object-cover"
-  loop
-  muted
-  playsInline
-  autoPlay
-  preload="auto"
-  poster={getThumbnailUrl(video.bunny_video_id)}
-  controls={false}
-/> 
+    <div className="relative h-[100dvh] w-full snap-start flex items-center justify-center bg-black">
+      <iframe
+        src={`https://iframe.mediadelivery.net/embed/722030/${video.bunny_video_id}?autoplay=true&loop=true&muted=true&preload=true&responsive=true`}
+        className="absolute inset-0 h-full w-full border-0"
+        allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
+        allowFullScreen
+      />
 
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none" />
 
