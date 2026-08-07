@@ -6,15 +6,11 @@ const API_KEY = process.env.BUNNY_API_KEY!;
 
 export async function POST(req: NextRequest) {
   try {
-    const formData = await req.formData();
-    const file = formData.get("file") as File | null;
-    const caption = (formData.get("caption") as string) || "Dumb funny shit";
+    const body = await req.json();
+    const caption = body.caption || "Dumb funny shit";
+    const title = (caption || "Dumb funny shit").slice(0, 100);
 
-    if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
-    }
-
-    // 1. Create video in Bunny
+    // 1. Create empty video in Bunny
     const createRes = await fetch(
       `https://video.bunnycdn.com/library/${LIBRARY_ID}/videos`,
       {
@@ -24,9 +20,7 @@ export async function POST(req: NextRequest) {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify({
-          title: caption.slice(0, 100) || "Dumb funny shit",
-        }),
+        body: JSON.stringify({ title }),
       }
     );
 
@@ -42,32 +36,7 @@ export async function POST(req: NextRequest) {
     const bunnyData = await createRes.json();
     const videoId = bunnyData.guid as string;
 
-    // 2. Upload the file
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    const uploadRes = await fetch(
-      `https://video.bunnycdn.com/library/${LIBRARY_ID}/videos/${videoId}`,
-      {
-        method: "PUT",
-        headers: {
-          AccessKey: API_KEY,
-          "Content-Type": "application/octet-stream",
-        },
-        body: buffer,
-      }
-    );
-
-    if (!uploadRes.ok) {
-      const text = await uploadRes.text();
-      console.error("Bunny upload failed:", uploadRes.status, text);
-      return NextResponse.json(
-        { error: `Bunny upload failed: ${uploadRes.status}` },
-        { status: 500 }
-      );
-    }
-
-    // 3. Save to Supabase
+    // 2. Save metadata to Supabase immediately
     const supabase = createServiceClient();
     const { data, error } = await supabase
       .from("videos")
@@ -83,11 +52,12 @@ export async function POST(req: NextRequest) {
       console.error("Supabase insert error:", error);
     }
 
+    // 3. Return the video ID so the client can upload directly to Bunny
     return NextResponse.json({
       success: true,
       videoId,
+      uploadUrl: `https://video.bunnycdn.com/library/${LIBRARY_ID}/videos/${videoId}`,
       supabaseId: data?.id,
-      message: "Video uploaded and is processing",
     });
   } catch (err: any) {
     console.error("Upload error:", err);
