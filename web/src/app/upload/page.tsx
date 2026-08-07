@@ -16,34 +16,42 @@ const handleUpload = async () => {
   if (!file) return;
   setUploading(true);
   setError("");
-  setProgress("Uploading...");
+  setProgress("Creating video...");
 
   try {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("caption", caption || "Dumb funny shit");
-
-    const res = await fetch("/api/upload", {
+    // Step 1: Ask our API to create the video entry
+    const createRes = await fetch("/api/upload", {
       method: "POST",
-      body: formData,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ caption: caption || "Dumb funny shit" }),
     });
 
-    const text = await res.text();
-    let data: any = {};
-    try {
-      data = JSON.parse(text);
-    } catch {
-      throw new Error(text || "Upload failed – server returned invalid response");
+    const createData = await createRes.json();
+    if (!createRes.ok) {
+      throw new Error(createData.error || "Failed to create video");
     }
 
-    if (!res.ok) {
-      throw new Error(data.error || "Upload failed");
+    const { videoId, uploadUrl } = createData;
+
+    // Step 2: Upload the actual file DIRECTLY to Bunny
+    setProgress("Uploading to Bunny...");
+    const uploadRes = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: {
+        AccessKey: process.env.NEXT_PUBLIC_BUNNY_API_KEY || "", // temporary – we’ll fix this next
+        "Content-Type": "application/octet-stream",
+      },
+      body: file,
+    });
+
+    if (!uploadRes.ok) {
+      throw new Error("Failed to upload file to Bunny");
     }
 
     setProgress("Done! Processing on Bunny...");
     setTimeout(() => {
       router.push("/");
-    }, 1500);
+    }, 2000);
   } catch (err: any) {
     console.error(err);
     setError(err.message || "Upload failed");
