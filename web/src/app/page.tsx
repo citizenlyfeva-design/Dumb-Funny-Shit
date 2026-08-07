@@ -159,7 +159,6 @@ export default function HomePage() {
           likes_count,
           comments_count,
           created_at,
-          profiles ( username, avatar_url )
         `
         )
         .order("created_at", { ascending: false })
