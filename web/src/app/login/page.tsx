@@ -47,7 +47,11 @@ export default function LoginPage() {
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="text-6xl mb-3">💩</div>
+          <img
+            src="/img_9919.png"
+            alt="DFS"
+            className="w-24 h-24 mx-auto mb-4 rounded-2xl"
+          />
           <h1 className="text-2xl font-black text-[#c6ff00]">
             DUMB FUNNY SHIT
           </h1>
