@@ -104,9 +104,11 @@ function VideoCard({
 
       <div className="absolute left-4 right-20 bottom-8 z-10">
         <div className="flex items-center gap-2 mb-2">
-          <div className="w-10 h-10 rounded-full bg-[#c6ff00] flex items-center justify-center text-xl">
-            💩
-          </div>
+          <img
+            src="/img_9919.png"
+            alt="DFS"
+            className="w-10 h-10 rounded-full"
+          />
           <span className="font-bold text-white">
             @{video.profiles?.username || "anonymous"}
           </span>
@@ -174,7 +176,11 @@ export default function HomePage() {
     <div className="relative h-[100dvh] w-full overflow-hidden bg-black">
       <header className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-4 pt-4 pb-3 bg-gradient-to-b from-black/60 to-transparent">
         <div className="flex items-center gap-2">
-          <span className="text-2xl">💩</span>
+          <img
+            src="/img_9919.png"
+            alt="DFS"
+            className="w-8 h-8 rounded-lg"
+          />
           <span className="font-black text-lg tracking-tight text-[#c6ff00]">
             DUMB FUNNY SHIT
           </span>
@@ -206,11 +212,19 @@ export default function HomePage() {
 
       {loading ? (
         <div className="h-full flex items-center justify-center">
-          <div className="text-[#c6ff00] text-4xl animate-bounce">💩</div>
+          <img
+            src="/img_9919.png"
+            alt="DFS"
+            className="w-16 h-16 rounded-2xl animate-bounce"
+          />
         </div>
       ) : videos.length === 0 ? (
         <div className="h-full flex flex-col items-center justify-center gap-4 px-6 text-center">
-          <div className="text-6xl">💩</div>
+          <img
+            src="/img_9919.png"
+            alt="DFS"
+            className="w-20 h-20 rounded-2xl"
+          />
           <h2 className="text-xl font-bold text-[#c6ff00]">No videos yet</h2>
           <p className="text-white/60">
             Be the first to upload some dumb funny shit
