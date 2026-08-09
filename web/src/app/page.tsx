@@ -105,7 +105,7 @@ function VideoCard({
       <div className="absolute left-4 right-20 bottom-8 z-10">
         <div className="flex items-center gap-2 mb-2">
           <img
-            src="/img_9919.png"
+            src="/IMG_9919.png"
             alt="DFS"
             className="w-10 h-10 rounded-full"
           />
@@ -177,7 +177,7 @@ export default function HomePage() {
       <header className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-4 pt-4 pb-3 bg-gradient-to-b from-black/60 to-transparent">
         <div className="flex items-center gap-2">
           <img
-            src="/img_9919.png"
+            src="/IMG_9919.png"
             alt="DFS"
             className="w-8 h-8 rounded-lg"
           />
@@ -213,7 +213,7 @@ export default function HomePage() {
       {loading ? (
         <div className="h-full flex items-center justify-center">
           <img
-            src="/img_9919.png"
+            src="/IMG_9919.png"
             alt="DFS"
             className="w-16 h-16 rounded-2xl animate-bounce"
           />
@@ -221,7 +221,7 @@ export default function HomePage() {
       ) : videos.length === 0 ? (
         <div className="h-full flex flex-col items-center justify-center gap-4 px-6 text-center">
           <img
-            src="/img_9919.png"
+            src="/IMG_9919.png"
             alt="DFS"
             className="w-20 h-20 rounded-2xl"
           />
