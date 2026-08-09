@@ -100,8 +100,6 @@
 
     }
 
-    #startBtn:hover, #restartBtn:hover { background: #2dd10f; }
-
     .hidden { display: none !important; }
 
   </style>
@@ -148,13 +146,13 @@
 
     let score = 0;
 
-    let speed = 4;
+    let speed = 2.2;          // much slower start
 
     let frameCount = 0;
 
-    let gravity = 0.6;
+    let gravity = 0.45;       // floatier
 
-    let jumpForce = -12;
+    let jumpForce = -13.5;    // higher jump
 
 
 
@@ -182,13 +180,13 @@
 
     let obstacleTimer = 0;
 
-    let nextObstacle = 90;
+    let nextObstacle = 160;   // much more space
 
     let portals = [];
 
     let portalTimer = 0;
 
-    let nextPortal = 400;
+    let nextPortal = 500;
 
 
 
@@ -202,8 +200,6 @@
 
       ctx.translate(player.x + player.width/2, player.y + player.height/2);
 
-      
-
       ctx.fillStyle = '#8B4513';
 
       ctx.beginPath();
@@ -212,15 +208,11 @@
 
       ctx.fill();
 
-      
-
       ctx.beginPath();
 
       ctx.ellipse(5, -30, 12, 18, 0.3, 0, Math.PI * 2);
 
       ctx.fill();
-
-      
 
       ctx.strokeStyle = '#FFD700';
 
@@ -231,8 +223,6 @@
       ctx.arc(12, -8, 10, 0, Math.PI * 2);
 
       ctx.stroke();
-
-      
 
       ctx.fillStyle = '#fff';
 
@@ -254,8 +244,6 @@
 
       ctx.fill();
 
-      
-
       ctx.strokeStyle = '#000';
 
       ctx.lineWidth = 2;
@@ -266,8 +254,6 @@
 
       ctx.stroke();
 
-      
-
       ctx.fillStyle = '#C0C0C0';
 
       ctx.fillRect(-40, -15, 18, 12);
@@ -275,8 +261,6 @@
       ctx.fillRect(-45, -25, 10, 18);
 
       ctx.fillRect(-48, -28, 8, 6);
-
-      
 
       ctx.restore();
 
@@ -436,7 +420,7 @@
 
       obstacles.push({
 
-        x: canvas.width + 20,
+        x: canvas.width + 40,
 
         y: groundY - 70,
 
@@ -456,7 +440,7 @@
 
       portals.push({
 
-        x: canvas.width + 40,
+        x: canvas.width + 60,
 
         y: groundY - 95,
 
@@ -494,7 +478,7 @@
 
       frameCount++;
 
-      if (frameCount % 300 === 0) speed += 0.35;
+      if (frameCount % 450 === 0) speed += 0.25; // slower speed increase
 
 
 
@@ -522,7 +506,7 @@
 
         obstacleTimer = 0;
 
-        nextObstacle = 70 + Math.random() * 80;
+        nextObstacle = 140 + Math.random() * 100; // much more space
 
       }
 
@@ -536,13 +520,13 @@
 
         if (
 
-          player.x < obs.x + obs.width - 10 &&
+          player.x < obs.x + obs.width - 15 &&
 
-          player.x + player.width - 15 > obs.x &&
+          player.x + player.width - 20 > obs.x &&
 
           player.y < obs.y + obs.height &&
 
-          player.y + player.height > obs.y + 10
+          player.y + player.height > obs.y + 15
 
         ) {
 
@@ -576,7 +560,7 @@
 
         portalTimer = 0;
 
-        nextPortal = 350 + Math.random() * 200;
+        nextPortal = 450 + Math.random() * 250;
 
       }
 
@@ -684,7 +668,7 @@
 
       score = 0;
 
-      speed = 4;
+      speed = 2.2;
 
       frameCount = 0;
 
@@ -696,9 +680,9 @@
 
       portalTimer = 0;
 
-      nextObstacle = 90;
+      nextObstacle = 160;
 
-      nextPortal = 400;
+      nextPortal = 500;
 
       player.y = groundY - player.height;
 
