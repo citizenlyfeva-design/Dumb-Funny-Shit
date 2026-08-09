@@ -1,1 +1,767 @@
+<!DOCTYPE html>
 
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+
+  <title>Mr. Number 2 Runner – Dumb Funny Shit</title>
+
+  <style>
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+
+      background: #000;
+
+      display: flex;
+
+      flex-direction: column;
+
+      align-items: center;
+
+      justify-content: center;
+
+      min-height: 100vh;
+
+      font-family: system-ui, -apple-system, sans-serif;
+
+      color: #fff;
+
+      overflow: hidden;
+
+      touch-action: none;
+
+    }
+
+    #gameCanvas {
+
+      background: #000;
+
+      display: block;
+
+      max-width: 100%;
+
+      border: 2px solid #39ff14;
+
+      border-radius: 8px;
+
+    }
+
+    #ui {
+
+      margin-top: 12px;
+
+      text-align: center;
+
+      font-size: 18px;
+
+      color: #39ff14;
+
+    }
+
+    #score { font-weight: bold; font-size: 24px; }
+
+    #message {
+
+      margin-top: 8px;
+
+      font-size: 16px;
+
+      color: #aaa;
+
+      min-height: 24px;
+
+    }
+
+    #startBtn, #restartBtn {
+
+      margin-top: 16px;
+
+      padding: 12px 28px;
+
+      font-size: 18px;
+
+      background: #39ff14;
+
+      color: #000;
+
+      border: none;
+
+      border-radius: 8px;
+
+      cursor: pointer;
+
+      font-weight: bold;
+
+    }
+
+    #startBtn:hover, #restartBtn:hover { background: #2dd10f; }
+
+    .hidden { display: none !important; }
+
+  </style>
+
+</head>
+
+<body>
+
+  <canvas id="gameCanvas" width="800" height="450"></canvas>
+
+  <div id="ui">
+
+    <div id="score">Flushes: 0</div>
+
+    <div id="message">Tap / Click / Space to Jump</div>
+
+    <button id="startBtn">Start Running</button>
+
+    <button id="restartBtn" class="hidden">Try Again</button>
+
+  </div>
+
+
+
+  <script>
+
+    const canvas = document.getElementById('gameCanvas');
+
+    const ctx = canvas.getContext('2d');
+
+    const scoreEl = document.getElementById('score');
+
+    const messageEl = document.getElementById('message');
+
+    const startBtn = document.getElementById('startBtn');
+
+    const restartBtn = document.getElementById('restartBtn');
+
+
+
+    let gameRunning = false;
+
+    let gameOver = false;
+
+    let score = 0;
+
+    let speed = 4;
+
+    let frameCount = 0;
+
+    let gravity = 0.6;
+
+    let jumpForce = -12;
+
+
+
+    const player = {
+
+      x: 120,
+
+      y: 300,
+
+      width: 70,
+
+      height: 80,
+
+      vy: 0,
+
+      grounded: true
+
+    };
+
+
+
+    const groundY = 380;
+
+    let obstacles = [];
+
+    let obstacleTimer = 0;
+
+    let nextObstacle = 90;
+
+    let portals = [];
+
+    let portalTimer = 0;
+
+    let nextPortal = 400;
+
+
+
+    const reaper = { x: 20, y: 200, width: 80, height: 160 };
+
+
+
+    function drawPlayer() {
+
+      ctx.save();
+
+      ctx.translate(player.x + player.width/2, player.y + player.height/2);
+
+      
+
+      ctx.fillStyle = '#8B4513';
+
+      ctx.beginPath();
+
+      ctx.ellipse(0, 0, 28, 35, 0, 0, Math.PI * 2);
+
+      ctx.fill();
+
+      
+
+      ctx.beginPath();
+
+      ctx.ellipse(5, -30, 12, 18, 0.3, 0, Math.PI * 2);
+
+      ctx.fill();
+
+      
+
+      ctx.strokeStyle = '#FFD700';
+
+      ctx.lineWidth = 3;
+
+      ctx.beginPath();
+
+      ctx.arc(12, -8, 10, 0, Math.PI * 2);
+
+      ctx.stroke();
+
+      
+
+      ctx.fillStyle = '#fff';
+
+      ctx.beginPath();
+
+      ctx.arc(-8, -8, 6, 0, Math.PI * 2);
+
+      ctx.arc(12, -8, 5, 0, Math.PI * 2);
+
+      ctx.fill();
+
+      ctx.fillStyle = '#000';
+
+      ctx.beginPath();
+
+      ctx.arc(-8, -8, 3, 0, Math.PI * 2);
+
+      ctx.arc(12, -8, 2.5, 0, Math.PI * 2);
+
+      ctx.fill();
+
+      
+
+      ctx.strokeStyle = '#000';
+
+      ctx.lineWidth = 2;
+
+      ctx.beginPath();
+
+      ctx.arc(2, 5, 12, 0.2, Math.PI - 0.2);
+
+      ctx.stroke();
+
+      
+
+      ctx.fillStyle = '#C0C0C0';
+
+      ctx.fillRect(-40, -15, 18, 12);
+
+      ctx.fillRect(-45, -25, 10, 18);
+
+      ctx.fillRect(-48, -28, 8, 6);
+
+      
+
+      ctx.restore();
+
+    }
+
+
+
+    function drawObstacle(obs) {
+
+      ctx.fillStyle = '#fff';
+
+      ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+
+      ctx.fillStyle = '#0066CC';
+
+      ctx.fillRect(obs.x, obs.y + obs.height * 0.55, obs.width, obs.height * 0.45);
+
+      ctx.fillStyle = '#FF0000';
+
+      ctx.font = 'bold 16px Arial';
+
+      ctx.textAlign = 'center';
+
+      ctx.fillText('Life', obs.x + obs.width/2, obs.y + 28);
+
+      ctx.fillStyle = '#fff';
+
+      ctx.font = '10px Arial';
+
+      ctx.fillText('Cereal', obs.x + obs.width/2, obs.y + obs.height - 10);
+
+    }
+
+
+
+    function drawPortal(p) {
+
+      ctx.fillStyle = '#fff';
+
+      ctx.beginPath();
+
+      ctx.ellipse(p.x + 30, p.y + 40, 28, 18, 0, 0, Math.PI * 2);
+
+      ctx.fill();
+
+      ctx.fillStyle = '#87CEEB';
+
+      ctx.beginPath();
+
+      ctx.ellipse(p.x + 30, p.y + 40, 18, 12, 0, 0, Math.PI * 2);
+
+      ctx.fill();
+
+      ctx.fillStyle = '#fff';
+
+      ctx.fillRect(p.x + 10, p.y + 40, 40, 35);
+
+      ctx.fillStyle = '#ddd';
+
+      ctx.fillRect(p.x + 5, p.y + 70, 50, 12);
+
+      ctx.fillStyle = '#39ff14';
+
+      ctx.font = '14px Arial';
+
+      ctx.fillText('🚽', p.x + 20, p.y + 25);
+
+    }
+
+
+
+    function drawReaper() {
+
+      ctx.fillStyle = '#111';
+
+      ctx.beginPath();
+
+      ctx.moveTo(reaper.x + 40, reaper.y);
+
+      ctx.lineTo(reaper.x + 10, reaper.y + reaper.height);
+
+      ctx.lineTo(reaper.x + 70, reaper.y + reaper.height);
+
+      ctx.closePath();
+
+      ctx.fill();
+
+      ctx.beginPath();
+
+      ctx.arc(reaper.x + 40, reaper.y + 25, 22, 0, Math.PI * 2);
+
+      ctx.fill();
+
+      ctx.fillStyle = '#000';
+
+      ctx.beginPath();
+
+      ctx.arc(reaper.x + 40, reaper.y + 28, 14, 0, Math.PI * 2);
+
+      ctx.fill();
+
+      ctx.strokeStyle = '#555';
+
+      ctx.lineWidth = 4;
+
+      ctx.beginPath();
+
+      ctx.moveTo(reaper.x + 55, reaper.y + 10);
+
+      ctx.lineTo(reaper.x + 55, reaper.y + 120);
+
+      ctx.stroke();
+
+      ctx.strokeStyle = '#888';
+
+      ctx.lineWidth = 3;
+
+      ctx.beginPath();
+
+      ctx.arc(reaper.x + 55, reaper.y + 15, 25, -0.8, 0.5);
+
+      ctx.stroke();
+
+    }
+
+
+
+    function drawGround() {
+
+      ctx.strokeStyle = '#39ff14';
+
+      ctx.lineWidth = 4;
+
+      ctx.shadowColor = '#39ff14';
+
+      ctx.shadowBlur = 12;
+
+      ctx.beginPath();
+
+      ctx.moveTo(0, groundY);
+
+      ctx.lineTo(canvas.width, groundY);
+
+      ctx.stroke();
+
+      ctx.shadowBlur = 0;
+
+      ctx.fillStyle = '#0a0a0a';
+
+      ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+
+    }
+
+
+
+    function spawnObstacle() {
+
+      obstacles.push({
+
+        x: canvas.width + 20,
+
+        y: groundY - 70,
+
+        width: 55,
+
+        height: 70,
+
+        passed: false
+
+      });
+
+    }
+
+
+
+    function spawnPortal() {
+
+      portals.push({
+
+        x: canvas.width + 40,
+
+        y: groundY - 95,
+
+        width: 60,
+
+        height: 90,
+
+        collected: false
+
+      });
+
+    }
+
+
+
+    function jump() {
+
+      if (!gameRunning || gameOver) return;
+
+      if (player.grounded) {
+
+        player.vy = jumpForce;
+
+        player.grounded = false;
+
+      }
+
+    }
+
+
+
+    function update() {
+
+      if (!gameRunning || gameOver) return;
+
+      frameCount++;
+
+      if (frameCount % 300 === 0) speed += 0.35;
+
+
+
+      player.vy += gravity;
+
+      player.y += player.vy;
+
+      if (player.y + player.height >= groundY) {
+
+        player.y = groundY - player.height;
+
+        player.vy = 0;
+
+        player.grounded = true;
+
+      }
+
+
+
+      obstacleTimer++;
+
+      if (obstacleTimer >= nextObstacle) {
+
+        spawnObstacle();
+
+        obstacleTimer = 0;
+
+        nextObstacle = 70 + Math.random() * 80;
+
+      }
+
+
+
+      for (let i = obstacles.length - 1; i >= 0; i--) {
+
+        const obs = obstacles[i];
+
+        obs.x -= speed;
+
+        if (
+
+          player.x < obs.x + obs.width - 10 &&
+
+          player.x + player.width - 15 > obs.x &&
+
+          player.y < obs.y + obs.height &&
+
+          player.y + player.height > obs.y + 10
+
+        ) {
+
+          endGame();
+
+          return;
+
+        }
+
+        if (!obs.passed && obs.x + obs.width < player.x) {
+
+          obs.passed = true;
+
+          score += 1;
+
+          scoreEl.textContent = `Flushes: ${score}`;
+
+        }
+
+        if (obs.x + obs.width < 0) obstacles.splice(i, 1);
+
+      }
+
+
+
+      portalTimer++;
+
+      if (portalTimer >= nextPortal) {
+
+        spawnPortal();
+
+        portalTimer = 0;
+
+        nextPortal = 350 + Math.random() * 200;
+
+      }
+
+
+
+      for (let i = portals.length - 1; i >= 0; i--) {
+
+        const p = portals[i];
+
+        p.x -= speed;
+
+        if (
+
+          !p.collected &&
+
+          player.x < p.x + p.width &&
+
+          player.x + player.width > p.x &&
+
+          player.y < p.y + p.height &&
+
+          player.y + player.height > p.y
+
+        ) {
+
+          p.collected = true;
+
+          score += 5;
+
+          scoreEl.textContent = `Flushes: ${score}`;
+
+          messageEl.textContent = 'TOILET PORTAL! +5';
+
+          setTimeout(() => { if (gameRunning) messageEl.textContent = ''; }, 1000);
+
+        }
+
+        if (p.x + p.width < 0 || p.collected) portals.splice(i, 1);
+
+      }
+
+    }
+
+
+
+    function draw() {
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      drawGround();
+
+      drawReaper();
+
+      portals.forEach(drawPortal);
+
+      obstacles.forEach(drawObstacle);
+
+      drawPlayer();
+
+
+
+      if (gameOver) {
+
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = '#39ff14';
+
+        ctx.font = 'bold 42px Arial';
+
+        ctx.textAlign = 'center';
+
+        ctx.fillText('FLUSHED', canvas.width/2, canvas.height/2 - 20);
+
+        ctx.font = '20px Arial';
+
+        ctx.fillStyle = '#fff';
+
+        ctx.fillText(`You survived ${score} flushes`, canvas.width/2, canvas.height/2 + 20);
+
+      }
+
+    }
+
+
+
+    function gameLoop() {
+
+      update();
+
+      draw();
+
+      requestAnimationFrame(gameLoop);
+
+    }
+
+
+
+    function startGame() {
+
+      gameRunning = true;
+
+      gameOver = false;
+
+      score = 0;
+
+      speed = 4;
+
+      frameCount = 0;
+
+      obstacles = [];
+
+      portals = [];
+
+      obstacleTimer = 0;
+
+      portalTimer = 0;
+
+      nextObstacle = 90;
+
+      nextPortal = 400;
+
+      player.y = groundY - player.height;
+
+      player.vy = 0;
+
+      player.grounded = true;
+
+      scoreEl.textContent = 'Flushes: 0';
+
+      messageEl.textContent = '';
+
+      startBtn.classList.add('hidden');
+
+      restartBtn.classList.add('hidden');
+
+    }
+
+
+
+    function endGame() {
+
+      gameOver = true;
+
+      gameRunning = false;
+
+      messageEl.textContent = 'Mr. Number 2 got hit by Life';
+
+      restartBtn.classList.remove('hidden');
+
+    }
+
+
+
+    function handleInput(e) {
+
+      e.preventDefault();
+
+      if (!gameRunning && !gameOver) startGame();
+
+      else jump();
+
+    }
+
+
+
+    window.addEventListener('keydown', (e) => {
+
+      if (e.code === 'Space' || e.code === 'ArrowUp') handleInput(e);
+
+    });
+
+    canvas.addEventListener('pointerdown', handleInput);
+
+    startBtn.addEventListener('click', startGame);
+
+    restartBtn.addEventListener('click', startGame);
+
+
+
+    gameLoop();
+
+  </script>
+
+</body>
+
+</html>
