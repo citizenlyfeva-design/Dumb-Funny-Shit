@@ -48,7 +48,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <img
-            src="/img_9919.png"
+            src="/IMG_9919.png"
             alt="DFS"
             className="w-24 h-24 mx-auto mb-4 rounded-2xl"
           />
